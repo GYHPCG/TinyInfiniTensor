@@ -34,67 +34,27 @@ namespace infini
         // =================================== 作业 ===================================
         // 找到最小的可用内存
         // 使用 std::upper_bound 查找第一个大小大于 size 的块
-        // auto it = std::upper_bound(freeBlocks.begin(), freeBlocks.end(),
-        //                            size,
-        //                            [](size_t size, const std::pair<size_t, size_t> &block)
-        //                            {
-        //                                return size < block.second;
-        //                            });
+        auto it = std::upper_bound(freeBlocks.begin(), freeBlocks.end(),
+                                   size,
+                                   [](size_t size, const std::pair<size_t, size_t> &block)
+                                   {
+                                       return size < block.second;
+                                   });
 
-        // size_t addr = 0;
-        // if (it != freeBlocks.end())
-        // {
-        //     // 从找到的块分配内存
-        //     addr = it->first + it->second - size;
-        //     it->second -= size;
-        //     if (it->second == 0)
-        //     {
-        //         freeBlocks.erase(it);
-        //     }
-        // }
-        // else
-        // {
-        //     // 如果没有找到合适的块，从原始内存中分配
-        //     addr = used;
-        //     used += size;
-        // }
-
-        // peak = used;
-        // return addr;
-        // return 0;
-        auto target{freeBlocks.end()};
-        for (auto it = freeBlocks.begin(); it != freeBlocks.end(); ++it)
+        size_t addr = 0;
+        if (it != freeBlocks.end())
         {
-            if (it->second >= size)
+            // 从找到的块分配内存
+            addr = it->first + it->second - size;
+            it->second -= size;
+            if (it->second == 0)
             {
-                // valid block
-                if (target == freeBlocks.end())
-                {
-                    // the first available block
-                    target = it;
-                }
-                else if (target->second > it->second)
-                {
-                    // try to find the smallest block
-                    target = it;
-                }
-            }
-        }
-
-        size_t addr{0};
-        if (target != freeBlocks.end())
-        {
-            // alloc from recycled blocks
-            addr = target->first + target->second - size;
-            target->second -= size;
-            if (target->second == 0)
-            {
-                freeBlocks.erase(target);
+                freeBlocks.erase(it);
             }
         }
         else
         {
-            // alloc from raw memory bank
+            // 如果没有找到合适的块，从原始内存中分配
             addr = used;
             used += size;
         }
@@ -112,33 +72,31 @@ namespace infini
         // TODO: 设计一个算法来回收内存
         // =================================== 作业 ===================================
         // 查找紧邻的前一个和后一个块
-        freeBlocks.insert(std::make_pair(addr, size));
+        auto next = freeBlocks.lower_bound(addr);
+        auto prev = (next != freeBlocks.begin()) ? std::prev(next) : freeBlocks.end();
 
-        // 尝试合并相邻的空闲块
-        for (auto it = freeBlocks.begin(); it != freeBlocks.end();)
+        if (prev != freeBlocks.end() && (prev->first + prev->second == addr))
         {
-            // 查找当前块后面紧挨的块
-            auto found = freeBlocks.find(it->first + it->second);
-            if (found != freeBlocks.end())
+            // 合并前一个块
+            prev->second += size;
+            if (next != freeBlocks.end() && (addr + size == next->first))
             {
-                // 如果找到紧挨的块，将它们合并
-                it->second += found->second;
-                freeBlocks.erase(found);
-            }
-            else if (it->first + it->second == used)
-            {
-                // 如果当前块连接到已使用的内存，将其释放回内存池
-                used -= it->second;
-                it = freeBlocks.erase(it);
-            }
-            else
-            {
-                // 否则，继续检查下一个块
-                ++it;
+                // 如果与下一个块也相邻，继续合并
+                prev->second += next->second;
+                freeBlocks.erase(next);
             }
         }
-
-        // 更新峰值
+        else
+        {
+            if (next != freeBlocks.end() && (addr + size == next->first))
+            {
+                // 只与下一个块相邻，合并
+                size += next->second;
+                freeBlocks.erase(next);
+            }
+            // 插入新的空闲块
+            freeBlocks[addr] = size;
+        }
         peak = used;
     }
 

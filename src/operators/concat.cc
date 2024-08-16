@@ -1,6 +1,5 @@
 #include "operators/concat.h"
 #include "utils/operator_utils.h"
-
 namespace infini
 {
     ConcatObj::ConcatObj(GraphObj *graph, TensorVec inputs, Tensor output, int _dim)
@@ -28,7 +27,8 @@ namespace infini
             {
                 if ((int)i != dim)
                 {
-                    return std::nullopt; // 如果非拼接轴的维度不一致，则返回 nullopt 表示形状推断失败
+                   IT_ASSERT(dims[i] == inputDims[i]);
+                    // return   std::nullopt; // 如果非拼接轴的维度不一致，则返回 nullopt 表示形状推断失败
                 }
                 else
                 {
