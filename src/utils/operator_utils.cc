@@ -20,8 +20,8 @@ Shape infer_broadcast(const Shape &A, const Shape &B) {
             result[result.size() - i - 1] = A[A_idx];
         } else {
             result[result.size() - i - 1] = B[B_idx];
-
-    
+        }
+    }
     return result;
 }
 
