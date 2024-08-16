@@ -34,66 +34,26 @@ namespace infini
         // =================================== 作业 ===================================
         // 找到最小的可用内存
         // 使用 std::upper_bound 查找第一个大小大于 size 的块
-        // auto it = std::upper_bound(freeBlocks.begin(), freeBlocks.end(),
-        //                            size,
-        //                            [](size_t size, const std::pair<size_t, size_t> &block)
-        //                            {
-        //                                return size < block.second;
-        //                            });
-
-        // size_t addr = 0;
-        // if (it != freeBlocks.end())
-        // {
-        //     // 从找到的块分配内存
-        //     addr = it->first + it->second - size;
-        //     it->second -= size;
-        //     if (it->second == 0)
-        //     {
-        //         freeBlocks.erase(it);
-        //     }
-        // }
-        // else
-        // {
-        //     // 如果没有找到合适的块，从原始内存中分配
-        //     addr = used;
-        //     used += size;
-        // }
-
-        // peak = used;
-        // return addr;
-        auto target{freeBlocks.end()};
-        for (auto it = freeBlocks.begin(); it != freeBlocks.end(); ++it)
+        auto it = std::upper_bound(freeBlocks.begin(), freeBlocks.end(),
+                                   size-1,
+                                   [](size_t size, const std::pair<size_t, size_t> &block)
+                                   {
+                                       return size < block.second;
+                                   });
+        size_t addr = 0;
+        if (it != freeBlocks.end())
         {
-            if (it->second >= size)
+            // 从找到的块分配内存
+            addr = it->first + it->second - size;
+            it->second -= size;
+            if (it->second == 0)
             {
-                // valid block
-                if (target == freeBlocks.end())
-                {
-                    // the first available block
-                    target = it;
-                }
-                else if (target->second > it->second)
-                {
-                    // try to find the smallest block
-                    target = it;
-                }
-            }
-        }
-
-        size_t addr{0};
-        if (target != freeBlocks.end())
-        {
-            // alloc from recycled blocks
-            addr = target->first + target->second - size;
-            target->second -= size;
-            if (target->second == 0)
-            {
-                freeBlocks.erase(target);
+                freeBlocks.erase(it);
             }
         }
         else
         {
-            // alloc from raw memory bank
+            // 如果没有找到合适的块，从原始内存中分配
             addr = used;
             used += size;
         }
