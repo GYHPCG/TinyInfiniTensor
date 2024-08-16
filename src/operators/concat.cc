@@ -19,21 +19,27 @@ namespace infini
         // TODO：修改 dims，返回正确的 concat 后的 shape
         // REF: https://onnx.ai/onnx/operators/onnx__Concat.html#concat-13
         // =================================== 作业 ===================================
-        // 检查所有输入在非拼接轴上的维度是否相同
-        for (const auto &input : inputs)
+        // 遍历每个输入的维度并更新dims
+        for (size_t j = 1; j < inputs.size(); ++j)
         {
-            const auto &inputDims = input->getDims();
+            const auto &inputDims = inputs[j]->getDims();
+
+            // 检查rank是否匹配
+            if (inputs[j]->getRank() != rank)
+            {
+                return std::nullopt; // 如果输入的rank不一致，返回nullopt表示失败
+            }
+
             for (size_t i = 0; i < rank; ++i)
             {
-                if ((int)i != dim)
-                {
-                   IT_ASSERT(dims[i] == inputDims[i]);
-                    // return   std::nullopt; // 如果非拼接轴的维度不一致，则返回 nullopt 表示形状推断失败
-                }
-                else
+                if (static_cast<int>(i) == dim)
                 {
                     // 累加拼接轴上的维度
                     dims[i] += inputDims[i];
+                }
+                else if (dims[i] != inputDims[i])
+                {
+                    return std::nullopt; // 如果非拼接轴的维度不一致，返回nullopt表示失败
                 }
             }
         }

@@ -225,6 +225,133 @@ namespace infini
         }
 
         IT_ASSERT(topo_sort() == true);
+        // if (ops.empty())
+        // {
+        //     return;
+        // }
+
+        // IT_ASSERT(topo_sort());
+
+        // // 使用一个循环来重复执行优化，直到没有进一步的优化为止
+        // bool optimized;
+        // do
+        // {
+        //     optimized = false;
+
+        //     for (size_t i = 0; i < ops.size();)
+        //     {
+        //         auto &op = ops[i];
+
+        //         // 处理 Transpose 算子
+        //         if (op->type == OpType::Transpose)
+        //         {
+        //             const auto &perm = as<TransposeObj>(op)->getPermute();
+
+        //             for (auto &succ : op->successors)
+        //             {
+        //                 auto succ_ptr = succ.lock();
+        //                 if (!succ_ptr)
+        //                 {
+        //                     continue;
+        //                 }
+
+        //                 // 规则 1：移除冗余的 Transpose
+        //                 if (succ_ptr->type == OpType::Transpose)
+        //                 {
+        //                     const auto &succ_perm = as<TransposeObj>(succ_ptr)->getPermute();
+        //                     if (perm == succ_perm)
+        //                     {
+        //                         // 如果相邻的两个 Transpose 操作执行的是相同的置换操作，则它们是冗余的，可以删除
+        //                         for (auto &succ2 : succ_ptr->successors)
+        //                         {
+        //                             auto succ2_ptr = succ2.lock();
+        //                             if (!succ2_ptr)
+        //                             {
+        //                                 continue;
+        //                             }
+
+        //                             // 释放相关的 tensor
+        //                             for (auto t : op->outputs)
+        //                             {
+        //                                 removeTensor(t);
+        //                             }
+        //                             for (auto t : succ_ptr->outputs)
+        //                             {
+        //                                 removeTensor(t);
+        //                             }
+
+        //                             // 重新连接图
+        //                             for (size_t j = 0; j < succ2_ptr->inputs.size(); ++j)
+        //                             {
+        //                                 if (succ2_ptr->inputs[j] == succ_ptr->outputs[0])
+        //                                 {
+        //                                     succ2_ptr->inputs[j] = op->inputs[0];
+        //                                 }
+        //                             }
+        //                             for (auto &input : succ2_ptr->inputs)
+        //                             {
+        //                                 input->removeTarget(op);
+        //                                 input->addTarget(succ2_ptr);
+        //                             }
+        //                             succ2_ptr->removePredecessors(succ_ptr);
+        //                         }
+
+        //                         // 从 ops 中移除冗余的 Transpose 算子
+        //                         ops.erase(std::remove(ops.begin(), ops.end(), op), ops.end());
+        //                         ops.erase(std::remove(ops.begin(), ops.end(), succ_ptr), ops.end());
+
+        //                         // 图结构已被修改，重新开始优化
+        //                         i = 0;
+        //                         optimized = true;
+        //                         break;
+        //                     }
+        //                 }
+        //                 // 规则 2：合并 Transpose 和 MatMul
+        //                 else if (succ_ptr->type == OpType::MatMul)
+        //                 {
+        //                     if ((perm.back() == static_cast<int>(perm.size()) - 2) &&
+        //                         (perm[perm.size() - 2] == static_cast<int>(perm.size()) - 1))
+        //                     {
+        //                         // 如果 Transpose 是对最后两个维度进行交换，则可以将这个操作融入到 MatMul 算子的属性中
+        //                         auto matmul_op = as<MatmulObj>(succ_ptr);
+        //                         if (op->outputs[0] == succ_ptr->inputs[0])
+        //                         {
+        //                             // 如果 Transpose 操作对应于 MatMul 的第一个输入，设置 transA 属性
+        //                             matmul_op->setTransA(true);
+        //                             succ_ptr->inputs[0] = op->inputs[0];
+        //                             succ_ptr->inputs[0]->removeTarget(op);
+        //                             succ_ptr->inputs[0]->addTarget(succ_ptr);
+        //                         }
+        //                         else
+        //                         {
+        //                             // 如果 Transpose 操作对应于 MatMul 的第二个输入，设置 transB 属性
+        //                             matmul_op->setTransB(true);
+        //                             succ_ptr->inputs[1] = op->inputs[0];
+        //                             succ_ptr->inputs[1]->removeTarget(op);
+        //                             succ_ptr->inputs[1]->addTarget(succ_ptr);
+        //                         }
+
+        //                         // 释放相关的 tensor 并从 ops 中移除 Transpose 算子
+        //                         removeTensor(op->outputs[0]);
+        //                         ops.erase(std::remove(ops.begin(), ops.end(), op), ops.end());
+
+        //                         // 图结构已被修改，重新开始优化
+        //                         i = 0;
+        //                         optimized = true;
+        //                         break;
+        //                     }
+        //                 }
+        //             }
+        //         }
+
+        //         if (!optimized)
+        //         {
+        //             ++i;
+        //         }
+        //     }
+        // } while (optimized);
+
+        // IT_ASSERT(topo_sort());
     }
 
     Tensor GraphObj::getTensor(int fuid) const
