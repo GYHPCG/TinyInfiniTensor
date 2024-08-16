@@ -32,8 +32,36 @@ namespace infini
         // =================================== 作业 ===================================
         // TODO: 设计一个算法来分配内存，返回起始地址偏移量
         // =================================== 作业 ===================================
+        // 找到最小的可用内存
+        // 使用 std::upper_bound 查找第一个大小大于 size 的块
+        auto it = std::upper_bound(freeBlocks.begin(), freeBlocks.end(),
+                                   size,
+                                   [](size_t size, const std::pair<size_t, size_t> &block)
+                                   {
+                                       return size < block.second;
+                                   });
 
-        return 0;
+        size_t addr = 0;
+        if (it != freeBlocks.end())
+        {
+            // 从找到的块分配内存
+            addr = it->first + it->second - size;
+            it->second -= size;
+            if (it->second == 0)
+            {
+                freeBlocks.erase(it);
+            }
+        }
+        else
+        {
+            // 如果没有找到合适的块，从原始内存中分配
+            addr = used;
+            used += size;
+        }
+
+        peak = used;
+        return addr;
+        // return 0;
     }
 
     void Allocator::free(size_t addr, size_t size)
@@ -44,6 +72,32 @@ namespace infini
         // =================================== 作业 ===================================
         // TODO: 设计一个算法来回收内存
         // =================================== 作业 ===================================
+        // 查找紧邻的前一个和后一个块
+        auto next = freeBlocks.lower_bound(addr);
+        auto prev = (next != freeBlocks.begin()) ? std::prev(next) : freeBlocks.end();
+
+        if (prev != freeBlocks.end() && (prev->first + prev->second == addr))
+        {
+            // 合并前一个块
+            prev->second += size;
+            if (next != freeBlocks.end() && (addr + size == next->first))
+            {
+                // 如果与下一个块也相邻，继续合并
+                prev->second += next->second;
+                freeBlocks.erase(next);
+            }
+        }
+        else
+        {
+            if (next != freeBlocks.end() && (addr + size == next->first))
+            {
+                // 只与下一个块相邻，合并
+                size += next->second;
+                freeBlocks.erase(next);
+            }
+            // 插入新的空闲块
+            freeBlocks[addr] = size;
+        }
     }
 
     void *Allocator::getPtr()

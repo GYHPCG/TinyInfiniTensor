@@ -69,7 +69,11 @@ namespace infini
         return true;
     }
 
-    optional<vector<Shape>> OperatorObj::inferShape() { return inferShape(inputs); }
+    optional<vector<Shape>> OperatorObj::inferShape()
+    {
+
+        return inferShape(inputs);
+    }
 
     vector<DataType> OperatorObj::inferDataType(const TensorVec &inputs) const
     {
